@@ -1,30 +1,53 @@
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 import { db } from "../database/database.connection.js";
+import {
+  createCustomer,
+  createFreelancer,
+} from "../repositories/auth.repositories.js";
 
 export async function signUp(req, res) {
-  let { name, email, password } = req.body;
+  const type = req.params;
+  let { name, email, password, image, phone, cityId } = req.body;
 
-  try {
-    const encryptedPassword = bcrypt.hashSync(password, 10);
-    password = encryptedPassword;
+  const encryptedPassword = bcrypt.hashSync(password, 10);
+  password = encryptedPassword;
 
-    await db.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-      [name, email, password]
-    );
+  if (type == "customer") {
+    try {
+      await createCustomer({ name, email, password, image, phone, cityId });
 
-    return res.sendStatus(201);
-  } catch (err) {
-    const duplicateEmailMessage = `duplicate key value violates unique constraint "users_email_key"`;
+      return res.sendStatus(201);
+    } catch (error) {
+      if (error.message.includes("duplicate key value")) {
+        return res
+          .status(409)
+          .send({ message: "Já possui uma conta com esse email!" });
+      }
 
-    if (err.message == duplicateEmailMessage) {
-      res.status(409).send({ message: "Já possui uma conta com esse email!" });
-      return;
+      return res.status(500).send({ message: error.message });
     }
-
-    return res.status(500).send({ message: err.message });
   }
+
+  if (type == "freelancer") {
+    try {
+      await createFreelancer({ name, email, password, image, phone, cityId });
+
+      return res.sendStatus(201);
+    } catch (error) {
+      if (error.message.includes("duplicate key value")) {
+        return res
+          .status(409)
+          .send({ message: "Já possui uma conta com esse email!" });
+      }
+
+      return res.status(500).send({ message: error.message });
+    }
+  }
+
+  return res
+    .status(422)
+    .send({ message: "Parâmetro 'type' da rota incorreto!" });
 }
 
 export async function signIn(req, res) {
