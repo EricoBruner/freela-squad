@@ -7,7 +7,7 @@ import {
 } from "../repositories/auth.repositories.js";
 
 export async function signUp(req, res) {
-  const type = req.params;
+  const { type } = req.params;
   let { name, email, password, image, phone, cityId } = req.body;
 
   const encryptedPassword = bcrypt.hashSync(password, 10);
@@ -52,10 +52,9 @@ export async function signUp(req, res) {
 
 export async function signIn(req, res) {
   const { email, password } = req.body;
+  const token = uuid();
 
   try {
-    const token = uuid();
-
     const {
       rows: [user],
     } = await db.query("SELECT * FROM users WHERE email=$1", [email]);

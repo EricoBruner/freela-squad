@@ -5,11 +5,11 @@ export function authValidator(req, res, next) {
   const user = { ...req.body };
   const path = req.url;
 
-  if (path == "/signup") {
+  if (path == "/signup/freelancer" || path == "/signup/customer") {
     const error = schemaValidator(signUpSchema, user);
     if (error) return res.status(422).send({ message: error });
 
-    next();
+    return next();
   }
 
   if (path == "/") {
@@ -18,4 +18,6 @@ export function authValidator(req, res, next) {
 
     next();
   }
+
+  next();
 }
