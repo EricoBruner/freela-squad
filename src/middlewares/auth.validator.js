@@ -16,8 +16,8 @@ export function authValidator(req, res, next) {
     const error = schemaValidator(signInSchema, user);
     if (error) return res.status(422).send({ message: error });
 
-    next();
+    return next();
   }
 
-  next();
+  return res.status(422).send({ message: "Parâmetro 'type' incorreto!" });
 }

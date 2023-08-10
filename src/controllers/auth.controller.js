@@ -1,9 +1,10 @@
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
-import { db } from "../database/database.connection.js";
 import {
   createCustomer,
   createFreelancer,
+  getUserByEmail,
+  saveSessionToDatabase,
 } from "../repositories/auth.repositories.js";
 
 export async function signUp(req, res) {
@@ -44,10 +45,6 @@ export async function signUp(req, res) {
       return res.status(500).send({ message: error.message });
     }
   }
-
-  return res
-    .status(422)
-    .send({ message: "Parâmetro 'type' da rota incorreto!" });
 }
 
 export async function signIn(req, res) {
@@ -57,7 +54,7 @@ export async function signIn(req, res) {
   try {
     const {
       rows: [user],
-    } = await db.query("SELECT * FROM users WHERE email=$1", [email]);
+    } = await getUserByEmail(email);
 
     if (!user) return res.status(401).send("Usuário não encontrado!");
 
@@ -65,11 +62,7 @@ export async function signIn(req, res) {
       return res.status(401).send("Usuário ou senha incorretas!");
     }
 
-    await db.query("DELETE FROM sessions WHERE user_id=$1", [user.id]);
-    await db.query("INSERT INTO sessions (token, user_id) VALUES ($1, $2)", [
-      token,
-      user.id,
-    ]);
+    await saveSessionToDatabase(user.userType, user.id, token);
 
     return res.status(200).send({ token: token });
   } catch (err) {

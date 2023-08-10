@@ -17,3 +17,49 @@ export async function createFreelancer(data) {
 
   return resp;
 }
+
+export async function getUserByEmail(email) {
+  const resp = await db.query(
+    `
+    SELECT 
+      'customer' AS "userType", 
+      "id",
+      "email",
+      "password" 
+    FROM "customers" 
+    WHERE "email" = $1
+      UNION
+    SELECT 
+      'freelancer' AS "userType", 
+      "id",
+      "email",
+      "password" 
+    FROM "freelancers" 
+    WHERE "email" = $1;`,
+    [email]
+  );
+
+  return resp;
+}
+
+export async function saveSessionToDatabase(userType, id, token) {
+  let resp;
+
+  if (userType == "customer") {
+    await db.query(`DELETE FROM SESSIONS WHERE "customerId"=$1`, [id]);
+    resp = await db.query(
+      `INSERT INTO sessions (token, "customerId") VALUES ($1, $2)`,
+      [token, id]
+    );
+  }
+
+  if (userType == "freelancer") {
+    await db.query(`DELETE FROM SESSIONS WHERE "freelancerId"=$1`, [id]);
+    resp = await db.query(
+      `INSERT INTO sessions (token, "freelancerId") VALUES ($1, $2)`,
+      [token, id]
+    );
+  }
+
+  return resp;
+}
