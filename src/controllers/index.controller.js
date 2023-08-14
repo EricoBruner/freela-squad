@@ -4,6 +4,8 @@ import {
   createServiceRoute,
   getAllServicesRoute,
   getOneService,
+  getMyServices,
+  deleteService,
 } from "./services.controller.js";
 
 export const authController = { signIn, signUp };
@@ -12,4 +14,6 @@ export const serviceController = {
   createServiceRoute,
   getAllServicesRoute,
   getOneService,
+  getMyServices,
+  deleteService,
 };

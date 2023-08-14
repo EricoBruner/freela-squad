@@ -17,9 +17,21 @@ serviceRouter.get(
 );
 
 serviceRouter.get(
+  "/services/me",
+  tokenValidator,
+  serviceController.getMyServices
+);
+
+serviceRouter.get(
   "/services/:id",
   tokenValidator,
   serviceController.getOneService
+);
+
+serviceRouter.delete(
+  "/services/:id",
+  tokenValidator,
+  serviceController.deleteService
 );
 
 export default serviceRouter;

@@ -62,3 +62,32 @@ export async function getServiceById(id) {
 
   return resp;
 }
+
+export async function getServicesByUser(id) {
+  const resp = await db.query(
+    `SELECT 
+      services.*, 
+      freelancers.name, 
+      freelancers.phone, 
+      freelancers.email, 
+      city.name AS "cityName", 
+      state.acronym AS "stateAcronym" 
+    FROM services 
+    JOIN freelancers 
+      ON freelancers.id = services."freelancerId"
+    JOIN city 
+      ON city.id = freelancers."cityId"
+    JOIN state 
+      ON state.id = city."stateId"
+    WHERE services."freelancerId" = $1;`,
+    [id]
+  );
+
+  return resp;
+}
+
+export async function deleteServiceById(id) {
+  const resp = await db.query("DELETE FROM services WHERE id=$1", [id]);
+
+  return resp;
+}
