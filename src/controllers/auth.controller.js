@@ -16,6 +16,16 @@ export async function signUp(req, res) {
 
   if (type == "customer") {
     try {
+      const {
+        rows: [emailExist],
+      } = await getUserByEmail(email);
+
+      if (emailExist) {
+        return res
+          .status(409)
+          .send({ message: "Já possui uma conta com esse email!" });
+      }
+
       await createCustomer({ name, email, password, image, phone, cityId });
 
       return res.sendStatus(201);
@@ -32,6 +42,16 @@ export async function signUp(req, res) {
 
   if (type == "freelancer") {
     try {
+      const {
+        rows: [emailExist],
+      } = await getUserByEmail(email);
+
+      if (emailExist) {
+        return res
+          .status(409)
+          .send({ message: "Já possui uma conta com esse email!" });
+      }
+
       await createFreelancer({ name, email, password, image, phone, cityId });
 
       return res.sendStatus(201);
@@ -56,15 +76,16 @@ export async function signIn(req, res) {
       rows: [user],
     } = await getUserByEmail(email);
 
-    if (!user) return res.status(401).send("Usuário não encontrado!");
+    if (!user)
+      return res.status(401).send({ message: "Usuário não encontrado!" });
 
     if (!bcrypt.compareSync(password, user.password)) {
-      return res.status(401).send("Usuário ou senha incorretas!");
+      return res.status(401).send({ message: "Usuário ou senha incorretas!" });
     }
 
     await saveSessionToDatabase(user.userType, user.id, token);
 
-    return res.status(200).send({ token: token });
+    return res.status(200).send({ token: token, userType: user.userType });
   } catch (err) {
     return res.status(500).send(err.message);
   }
